@@ -73,7 +73,7 @@
 
   /* Hero */
   .hero { text-align: center; padding: clamp(56px, 9vw, 120px) var(--gutter) clamp(64px, 10vw, 140px); display: grid; justify-items: center; }
-  main .hero-text.glass { border-radius: 52px; padding: clamp(32px, 5vw, 60px) clamp(28px, 6vw, 80px); max-width: 620px; width: 100%; }
+  main .hero-text.glass { border-radius: 30px; padding: clamp(32px, 5vw, 60px) clamp(28px, 6vw, 80px); max-width: 620px; width: 100%; }
   .mark-stage { position: relative; width: clamp(120px, 16vw, 160px); margin: 0 auto 28px; }
   .mark-stage::before {
     content: ""; position: absolute; inset: -70%;
@@ -101,49 +101,61 @@
   .convictions li {
     display: grid; grid-template-columns: clamp(48px, 7vw, 96px) minmax(0, 1fr);
     gap: clamp(14px, 2.4vw, 32px); align-items: baseline;
-    padding: clamp(26px, 3.2vw, 40px) clamp(26px, 3.4vw, 44px); border-radius: 40px;
+    padding: clamp(26px, 3.2vw, 40px) clamp(26px, 3.4vw, 44px); border-radius: 30px;
     width: min(100%, 44rem);
   }
   .convictions li:nth-child(even) { justify-self: end; }
-  main .head.glass { border-radius: 44px; padding: clamp(26px, 3.4vw, 44px); margin-bottom: clamp(28px, 4vw, 56px); }
+  main .head.glass { border-radius: 30px; padding: clamp(26px, 3.4vw, 44px); margin-bottom: clamp(28px, 4vw, 56px); }
   .num { font-size: clamp(44px, 7vw, 92px); font-weight: 400; font-style: italic; line-height: .9; color: var(--accent); }
   .convictions h3 { font-size: clamp(28px, 3.4vw, 42px); margin-bottom: 12px; }
   .convictions p { color: var(--text-2); max-width: var(--measure); }
 
-  /* Frosted glass: cards blur the picture pinned behind their section, and scroll over it while it stays still */
+  /* Each section pins a photograph; clear glass cards scroll over it */
   .scene { position: relative; isolation: isolate; }
   .scene-bg { position: absolute; inset: 0; overflow: clip; z-index: -1; background: var(--bg); }
   .scene-bg img { position: sticky; top: 0; display: block; width: 100%; height: 100vh; object-fit: cover; }
-  .scene-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(58,42,28,.55) 0, rgba(58,42,28,.16) 90px, rgba(58,42,28,.16) calc(100% - 90px), rgba(58,42,28,.55) 100%); }
+  .scene-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(40,27,16,.62) 0, rgba(40,27,16,.40) 90px, rgba(40,27,16,.40) calc(100% - 90px), rgba(40,27,16,.62) 100%); }
+  /* The seven GlassKit layers: content, refraction, (almost no) blur, tint, translucent
+     material, inner light, edge highlight, shadow. The centre stays clear; only a thin
+     band inside the edge bends what is behind it. */
   main .glass {
-    background: linear-gradient(140deg, rgba(255,246,232,.20) 0%, rgba(255,246,232,.08) 45%, rgba(255,246,232,.14) 100%);
-    -webkit-backdrop-filter: blur(26px) saturate(160%) brightness(.74);
-    backdrop-filter: blur(26px) saturate(160%) brightness(.74);
+    background: linear-gradient(180deg, rgba(255,255,255,.20) 0%, rgba(140,140,140,.05) 45%, rgba(140,140,140,.07) 100%);
+    -webkit-backdrop-filter: blur(1.5px);
+    backdrop-filter: blur(1.5px);
     border: 0;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 0 0 1px rgba(255,255,255,.10), 0 24px 70px rgba(30,18,8,.38);
+    box-shadow: 0 4px 12px rgba(0,0,0,.20), 0 1px 3px rgba(0,0,0,.05);
     position: relative; overflow: hidden;
   }
-  .glass::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
-    background: radial-gradient(120% 60% at 0% 0%, rgba(255,255,255,.18), rgba(255,255,255,0) 60%); }
-  .glass > * { position: relative; }
+  /* inner light: brightness under the top edge that gives the pane thickness */
+  .glass::before { content: ""; position: absolute; left: 5%; top: 1px; width: 90%; height: 18px; pointer-events: none; border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0)); filter: blur(8px); }
+  /* edge highlight: a one-pixel lit rim, brightest top-left, plus a slow orbiting glint */
+  .glass::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.15)), conic-gradient(from var(--turn), rgba(255,255,255,.35), rgba(255,255,255,.30) 14%, rgba(255,255,255,.03) 55%, rgba(255,255,255,.03) 80%, rgba(255,255,255,.35));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation: orbit 11s linear infinite; }
+  @property --turn { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  @keyframes orbit { to { --turn: 360deg; } }
+  .glass > * { position: relative; z-index: 1; }
   .glass p:not(.label):not(.status) { color: rgba(255,255,255,.92); }
   .glass .label { color: rgba(255,255,255,.8); }
-  .glass h1, .glass h2, .glass h3, .glass p, .glass blockquote, .glass .num { text-shadow: 0 1px 3px rgba(30,18,8,.6), 0 2px 18px rgba(30,18,8,.5); }
+  .glass h1, .glass h2, .glass h3, .glass p, .glass blockquote, .glass .num, .glass span { text-shadow: 0 1px 2px rgba(24,14,6,.75), 0 0 14px rgba(24,14,6,.55), 0 0 34px rgba(24,14,6,.4); }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    main .glass { background: rgba(58,40,24,.86); }
+    main .glass { background: rgba(58,40,24,.6); }
   }
   
   /* Leadership */
   .led { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
   .led .head { margin-bottom: 0; }
   .roles { display: grid; gap: 14px; }
-  .role { background: var(--surface); border-radius: 38px; padding: clamp(24px, 2.8vw, 36px); display: grid; gap: 8px; }
+  .role { background: var(--surface); border-radius: 30px; padding: clamp(24px, 2.8vw, 36px); display: grid; gap: 8px; }
   .role h3 { font-size: clamp(24px, 2.6vw, 32px); }
   .role p { color: var(--text-2); }
 
   /* Scripture */
   .verse .wrap { display: grid; justify-items: center; }
-  main .verse blockquote.glass { margin: 0; max-width: 46rem; text-align: center; border-radius: 48px; padding: clamp(32px, 5vw, 64px); font-size: clamp(26px, 3.6vw, 44px); font-style: italic; line-height: 1.25; text-wrap: balance; }
+  main .verse blockquote.glass { margin: 0; max-width: 46rem; text-align: center; border-radius: 30px; padding: clamp(32px, 5vw, 64px); font-size: clamp(26px, 3.6vw, 44px); font-style: italic; line-height: 1.25; text-wrap: balance; }
   .verse cite { display: block; margin-top: 26px; font-style: normal; }
 
   /* Gather + app */
@@ -152,7 +164,7 @@
   .solo.end .panel { justify-self: end; }
   .solo .panel.story { max-width: 44rem; }
   #gather, #app { padding: clamp(72px, 12vw, 180px) 0; }
-  .panel { background: var(--surface); border: 1px solid var(--stroke); border-radius: 44px; padding: clamp(26px, 3.4vw, 44px); display: flex; flex-direction: column; gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--stroke); border-radius: 30px; padding: clamp(26px, 3.4vw, 44px); display: flex; flex-direction: column; gap: 16px; }
   .panel h2 { font-size: clamp(32px, 3.8vw, 48px); }
   .panel p { color: var(--text-2); }
   .panel .status { display: inline-flex; align-self: flex-start; align-items: center; gap: 10px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--stroke); font-family: var(--sans); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-2); }
@@ -189,11 +201,14 @@
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+    .glass::after { animation: none; }
     .mark-stage::before { animation: none; opacity: .7; }
   }
 </style>
 </head>
 <body>
+
+<svg id="lenses" width="0" height="0" aria-hidden="true" style="position:absolute"></svg>
 
 <header class="nav">
   <div class="wrap">
@@ -366,6 +381,47 @@
 </footer>
 
 <script>
+  // GlassKit layer 2, refraction: a narrow band just inside each card's edge bends the
+  // picture behind it by a few pixels; the centre is left pixel-for-pixel sharp.
+  // Only Chromium browsers can displace a backdrop; elsewhere the cards stay clear and unbent.
+  (function () {
+    var chromium = /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/iPhone|iPad|iPod/.test(navigator.userAgent);
+    if (!chromium) return;
+    var NS = 'http://www.w3.org/2000/svg', host = document.getElementById('lenses');
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.glass'));
+    var BAND = 15, PEAK = 7; // GlassKit: bandWidth 13, strength 4.5, scaled up slightly for larger web cards
+    function map(w, h, r) {
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var x = c.getContext('2d'), img = x.createImageData(w, h), d = img.data, hx = w / 2, hy = h / 2, i = 0;
+      r = Math.min(r, hx, hy);
+      for (var py = 0; py < h; py++) for (var px = 0; px < w; px++, i += 4) {
+        var dx = px + .5 - hx, dy = py + .5 - hy, qx = Math.abs(dx) - (hx - r), qy = Math.abs(dy) - (hy - r), nx, ny, dist;
+        if (qx > 0 && qy > 0) { var l = Math.sqrt(qx * qx + qy * qy) || 1; dist = r - l; nx = qx / l * (dx < 0 ? -1 : 1); ny = qy / l * (dy < 0 ? -1 : 1); }
+        else if (qx > qy) { dist = -qx; nx = dx < 0 ? -1 : 1; ny = 0; }
+        else { dist = -qy; nx = 0; ny = dy < 0 ? -1 : 1; }
+        var m = 0;
+        if (dist < BAND) { var t = 1 - Math.max(dist, 0) / BAND; m = t * t; }
+        d[i] = Math.round(128 - nx * m * 127); d[i + 1] = Math.round(128 - ny * m * 127); d[i + 2] = 128; d[i + 3] = 255;
+      }
+      x.putImageData(img, 0, 0); return c.toDataURL();
+    }
+    function el(name, attrs) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+    function build() {
+      host.textContent = '';
+      cards.forEach(function (card, n) {
+        var w = Math.round(card.offsetWidth), h = Math.round(card.offsetHeight);
+        if (!w || !h) return;
+        var r = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0, id = 'lens-' + n;
+        var f = el('filter', { id: id, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', x: 0, y: 0, width: w, height: h, 'color-interpolation-filters': 'sRGB' });
+        f.appendChild(el('feImage', { href: map(w, h, r), x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'm' }));
+        f.appendChild(el('feDisplacementMap', { 'in': 'SourceGraphic', in2: 'm', scale: PEAK * 2, xChannelSelector: 'R', yChannelSelector: 'G' }));
+        host.appendChild(f);
+        card.style.backdropFilter = 'url(#' + id + ')'; card.style.webkitBackdropFilter = 'url(#' + id + ')';
+      });
+    }
+    var timer; build(); window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(build, 120); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+  })();
   // Email updates. Each signup is posted to the Google Form linked to the "Altaer" sheet,
   // where it lands as a new row (timestamp, email). The reply from Google can't be read
   // across sites, so a request that goes out without a network error is treated as sent.
