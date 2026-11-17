@@ -197,7 +197,29 @@
   footer .brand { font-size: 19px; }
   footer .brand img { width: 26px; height: 26px; border-radius: 7px; }
 
+  /* Centered, symmetrical layout: every card sits on the page's centre line and reads from its own centre */
+  .head, .panel, .role, .convictions li { text-align: center; }
+  .head { margin-inline: auto; justify-items: center; }
+  .head p, .convictions p, .panel p, .role p { margin-inline: auto; }
+  .convictions { justify-items: center; }
+  .convictions li, .convictions li:nth-child(even) { grid-template-columns: minmax(0, 1fr); justify-self: center; justify-items: center; gap: 10px; }
+  .led { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: clamp(28px, 4vw, 56px); }
+  .led .head { margin-bottom: 0; }
+  .roles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); width: 100%; }
+  .role { align-content: start; justify-items: center; }
+  .role.pastor { grid-column: 1 / -1; justify-self: center; grid-template-columns: minmax(0, 1fr); width: min(100%, 24rem); gap: 16px; }
+  .role.pastor div { justify-items: center; }
+  .solo { justify-items: center; }
+  .solo.end .panel { justify-self: center; }
+  .panel { align-items: center; }
+  .panel .status { align-self: center; }
+  .panel .app { justify-content: center; }
+  .signup { justify-items: center; width: 100%; }
+  .signup-row { justify-content: center; width: 100%; }
+  footer .wrap { flex-direction: column; justify-content: center; text-align: center; }
+
   @media (max-width: 760px) {
+    .roles { grid-template-columns: minmax(0, 1fr); }
     .led, .duo { grid-template-columns: minmax(0, 1fr); }
     .nav nav a:nth-child(n+4) { display: none; }
   }
