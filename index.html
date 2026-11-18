@@ -128,9 +128,11 @@
     box-shadow: inset 0 0 22px rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.20), 0 1px 3px rgba(0,0,0,.06);
     position: relative; overflow: hidden;
   }
-  /* the rim: a hairline of light, brightest at the top-left and again at the bottom-right */
-  .glass::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; padding: 1px;
-    background: linear-gradient(135deg, rgba(255,255,255,.80) 0%, rgba(255,255,255,.28) 22%, rgba(255,255,255,.14) 50%, rgba(255,255,255,.26) 78%, rgba(255,255,255,.55) 100%);
+  /* the rim: a half-pixel hairline (one device pixel on high-density screens). In Chromium the
+     lens filter below also lifts the picture itself along the edge, so the rim is made of the
+     backdrop, not of white. */
+  .glass::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; padding: .5px;
+    background: linear-gradient(135deg, rgba(255,255,255,.60) 0%, rgba(255,255,255,.20) 22%, rgba(255,255,255,.10) 50%, rgba(255,255,255,.18) 78%, rgba(255,255,255,.42) 100%);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
   .glass > * { position: relative; z-index: 1; }
@@ -426,7 +428,7 @@
     if (!chromium) return;
     var NS = 'http://www.w3.org/2000/svg', host = document.getElementById('lenses');
     var cards = Array.prototype.slice.call(document.querySelectorAll('.glass'));
-    var BAND = 24, PEAK = 12; // GlassKit: bandWidth 13, strength 4.5, scaled up slightly for larger web cards
+    var BAND = 24, PEAK = 12, RIM = 5; // GlassKit: bandWidth 13, strength 4.5, scaled up slightly for larger web cards
     function map(w, h, r) {
       var c = document.createElement('canvas'); c.width = w; c.height = h;
       var x = c.getContext('2d'), img = x.createImageData(w, h), d = img.data, hx = w / 2, hy = h / 2, i = 0;
@@ -438,7 +440,7 @@
         else { dist = r - qy; nx = 0; ny = dy < 0 ? -1 : 1; }
         var m = 0;
         if (dist < BAND) { var t = 1 - Math.max(dist, 0) / BAND; m = t * t; }
-        d[i] = Math.round(128 - nx * m * 127); d[i + 1] = Math.round(128 - ny * m * 127); d[i + 2] = 128; d[i + 3] = 255;
+        d[i] = Math.round(128 - nx * m * 127); d[i + 1] = Math.round(128 - ny * m * 127); d[i + 2] = Math.round(255 * Math.pow(Math.min(Math.max(1 - dist / RIM, 0), 1), 1.6)); d[i + 3] = 255;
       }
       x.putImageData(img, 0, 0); return c.toDataURL();
     }
@@ -452,7 +454,15 @@
         var f = el('filter', { id: id, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', x: 0, y: 0, width: w, height: h, 'color-interpolation-filters': 'sRGB' });
         f.appendChild(el('feImage', { href: map(w, h, r), x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'm' }));
         f.appendChild(el('feDisplacementMap', { 'in': 'SourceGraphic', in2: 'm', scale: PEAK * 2, xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' }));
-        f.appendChild(el('feGaussianBlur', { 'in': 'd', stdDeviation: 2.5 }));
+        f.appendChild(el('feGaussianBlur', { 'in': 'd', stdDeviation: 2.5, result: 'g' }));
+        // The rim: the same picture, brightened, shown only in a few pixels along the edge
+        // (the map's blue channel says where). Clear glass with a lit edge, no white line.
+        f.appendChild(el('feColorMatrix', { 'in': 'm', type: 'matrix', values: '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 1 0 0', result: 'rim' }));
+        var ct = el('feComponentTransfer', { 'in': 'g', result: 'lit' });
+        ['feFuncR', 'feFuncG', 'feFuncB'].forEach(function (n) { ct.appendChild(el(n, { type: 'linear', slope: 1.7, intercept: 0.06 })); });
+        f.appendChild(ct);
+        f.appendChild(el('feComposite', { 'in': 'lit', in2: 'rim', operator: 'in', result: 'edge' }));
+        var mg = el('feMerge', {}); mg.appendChild(el('feMergeNode', { 'in': 'g' })); mg.appendChild(el('feMergeNode', { 'in': 'edge' })); f.appendChild(mg);
         host.appendChild(f);
         card.style.backdropFilter = 'url(#' + id + ') saturate(115%)'; card.style.webkitBackdropFilter = 'url(#' + id + ') saturate(115%)';
       });
