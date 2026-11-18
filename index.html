@@ -119,9 +119,9 @@
      material, inner light, edge highlight, shadow. The centre stays clear; only a thin
      band inside the edge bends what is behind it. */
   main .glass {
-    background: linear-gradient(180deg, rgba(255,255,255,.16) 0%, rgba(150,150,150,.06) 45%, rgba(150,150,150,.08) 100%);
-    -webkit-backdrop-filter: blur(7px) saturate(120%);
-    backdrop-filter: blur(7px) saturate(120%);
+    background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(150,150,150,.035) 45%, rgba(150,150,150,.05) 100%);
+    -webkit-backdrop-filter: blur(3.5px) saturate(115%);
+    backdrop-filter: blur(3.5px) saturate(115%);
     border: 0;
     box-shadow: 0 8px 22px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.05);
     position: relative; overflow: hidden;
@@ -430,8 +430,8 @@
       for (var py = 0; py < h; py++) for (var px = 0; px < w; px++, i += 4) {
         var dx = px + .5 - hx, dy = py + .5 - hy, qx = Math.abs(dx) - (hx - r), qy = Math.abs(dy) - (hy - r), nx, ny, dist;
         if (qx > 0 && qy > 0) { var l = Math.sqrt(qx * qx + qy * qy) || 1; dist = r - l; nx = qx / l * (dx < 0 ? -1 : 1); ny = qy / l * (dy < 0 ? -1 : 1); }
-        else if (qx > qy) { dist = -qx; nx = dx < 0 ? -1 : 1; ny = 0; }
-        else { dist = -qy; nx = 0; ny = dy < 0 ? -1 : 1; }
+        else if (qx > qy) { dist = r - qx; nx = dx < 0 ? -1 : 1; ny = 0; }
+        else { dist = r - qy; nx = 0; ny = dy < 0 ? -1 : 1; }
         var m = 0;
         if (dist < BAND) { var t = 1 - Math.max(dist, 0) / BAND; m = t * t; }
         d[i] = Math.round(128 - nx * m * 127); d[i + 1] = Math.round(128 - ny * m * 127); d[i + 2] = 128; d[i + 3] = 255;
@@ -448,9 +448,9 @@
         var f = el('filter', { id: id, filterUnits: 'userSpaceOnUse', primitiveUnits: 'userSpaceOnUse', x: 0, y: 0, width: w, height: h, 'color-interpolation-filters': 'sRGB' });
         f.appendChild(el('feImage', { href: map(w, h, r), x: 0, y: 0, width: w, height: h, preserveAspectRatio: 'none', result: 'm' }));
         f.appendChild(el('feDisplacementMap', { 'in': 'SourceGraphic', in2: 'm', scale: PEAK * 2, xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' }));
-        f.appendChild(el('feGaussianBlur', { 'in': 'd', stdDeviation: 5 }));
+        f.appendChild(el('feGaussianBlur', { 'in': 'd', stdDeviation: 2.5 }));
         host.appendChild(f);
-        card.style.backdropFilter = 'url(#' + id + ') saturate(120%)'; card.style.webkitBackdropFilter = 'url(#' + id + ') saturate(120%)';
+        card.style.backdropFilter = 'url(#' + id + ') saturate(115%)'; card.style.webkitBackdropFilter = 'url(#' + id + ') saturate(115%)';
       });
     }
     var timer; build(); window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(build, 120); });
